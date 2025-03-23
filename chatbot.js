@@ -1,32 +1,24 @@
-(function () {
-    // יצירת סגנונות ה-CSS
-    const styles = `
-        #chat-container {
-            width: 350px;
-            position: fixed;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            z-index: 2147483647;
-            transition: transform 0.3s ease;
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>צ'אט עם ג'מיני</title>
+    <style>
+        body {
             font-family: Arial, sans-serif;
             direction: rtl;
             text-align: right;
-        }
-        #chat-container.open {
-            transform: translate(0, 0);
-        }
-        #chat-header {
-            background: #28a745;
-            color: white;
-            padding: 10px;
-            cursor: move;
-            text-align: center;
-            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         #chat-box {
-            height: 250px;
+            height: 400px;
             overflow-y: auto;
             padding: 10px;
             border-bottom: 1px solid #e0e0e0;
@@ -70,110 +62,23 @@
         #send-btn:hover, #record-btn:hover {
             background: #218838;
         }
-        #toggle-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #28a745;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 20px;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2147483647;
-        }
-    `;
+    </style>
+</head>
+<body>
+    <div id="chat-box">
+        <p><strong>מערכת:</strong> הצ'אט נטען בהצלחה!</p>
+    </div>
+    <div id="input-container">
+        <input type="text" id="user-input" placeholder="שאל אותי על סאונד...">
+        <button id="send-btn" title="שלח">▶</button>
+        <button id="record-btn" title="הקלט">🎤</button>
+    </div>
 
-    // הוספת הסגנונות ל-head
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-
-    // יצירת ה-HTML של הצ'אט
-    const chatHtml = `
-        <button id="toggle-btn" title="פתח צ'אט">💬</button>
-        <div id="chat-container">
-            <div id="chat-header">צ'אט עם ג'מיני</div>
-            <div id="chat-box">
-                <p><strong>מערכת:</strong> הצ'אט נטען בהצלחה!</p>
-            </div>
-            <div id="input-container">
-                <input type="text" id="user-input" placeholder="שאל אותי על סאונד...">
-                <button id="send-btn" title="שלח">▶</button>
-                <button id="record-btn" title="הקלט">🎤</button>
-            </div>
-        </div>
-    `;
-
-    // הזרקת הצ'אט ל-document.body
-    try {
-        const topLevelBody = window.top.document.body || document.body;
-        if (!topLevelBody) {
-            console.error("Cannot access document.body");
-            return;
-        }
-
-        if (topLevelBody.querySelector("#chat-container")) {
-            console.log("Chat already exists");
-            return;
-        }
-
-        topLevelBody.insertAdjacentHTML("beforeend", chatHtml);
-
-        // הגדרת האלמנטים לאחר ההזרקה
-        const chatContainer = document.getElementById("chat-container");
-        const chatHeader = document.getElementById("chat-header");
+    <script>
         const chatBox = document.getElementById("chat-box");
         const userInput = document.getElementById("user-input");
         const sendBtn = document.getElementById("send-btn");
-        const toggleBtn = document.getElementById("toggle-btn");
         const recordBtn = document.getElementById("record-btn");
-
-        // טעינת מיקום שמור מ-localStorage
-        const savedPosition = JSON.parse(localStorage.getItem("chatPosition")) || { x: 20, y: 20 };
-        chatContainer.style.left = savedPosition.x + "px";
-        chatContainer.style.top = savedPosition.y + "px";
-
-        // פתיחה/סגירה של החלון
-        toggleBtn.addEventListener("click", () => {
-            chatContainer.classList.toggle("open");
-        });
-
-        // גרירת החלון
-        let isDragging = false;
-        let currentX;
-        let currentY;
-
-        chatHeader.addEventListener("mousedown", (e) => {
-            isDragging = true;
-            currentX = e.clientX - parseInt(chatContainer.style.left || 0);
-            currentY = e.clientY - parseInt(chatContainer.style.top || 0);
-        });
-
-        document.addEventListener("mousemove", (e) => {
-            if (isDragging) {
-                const newX = e.clientX - currentX;
-                const newY = e.clientY - currentY;
-                chatContainer.style.left = newX + "px";
-                chatContainer.style.top = newY + "px";
-            }
-        });
-
-        document.addEventListener("mouseup", () => {
-            if (isDragging) {
-                isDragging = false;
-                localStorage.setItem("chatPosition", JSON.stringify({
-                    x: parseInt(chatContainer.style.left),
-                    y: parseInt(chatContainer.style.top)
-                }));
-            }
-        });
 
         // פונקציה לשליחת הודעה
         const API_KEY = "AIzaSyA-Y1xpQu986jdyC43_txYXFpieBuiOf0M";
@@ -181,7 +86,7 @@
             if (!message) return;
 
             chatBox.innerHTML += `<p><strong>אתה:</strong> ${message}</p>`;
-            chatContainer.classList.add("open");
+            chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
@@ -220,10 +125,24 @@
             recordBtn.addEventListener("click", () => {
                 navigator.permissions.query({ name: "microphone" }).then((result) => {
                     if (result.state === "granted") {
-                        startRecording();
+                        try {
+                            recognition.start();
+                            recordBtn.style.background = "#dc3545";
+                            chatBox.innerHTML += `<p><strong>מערכת:</strong> הקלטה מתחילה...</p>`;
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                        } catch (error) {
+                            console.error("Recording error:", error);
+                            chatBox.innerHTML += `<p><strong>מערכת:</strong> שגיאה בהקלטה: ${error.message}</p>`;
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                        }
                     } else if (result.state === "prompt") {
                         navigator.mediaDevices.getUserMedia({ audio: true })
-                            .then(() => startRecording())
+                            .then(() => {
+                                recognition.start();
+                                recordBtn.style.background = "#dc3545";
+                                chatBox.innerHTML += `<p><strong>מערכת:</strong> הקלטה מתחילה...</p>`;
+                                chatBox.scrollTop = chatBox.scrollHeight;
+                            })
                             .catch((error) => {
                                 console.error("Microphone permission error:", error);
                                 chatBox.innerHTML += `<p><strong>מערכת:</strong> שגיאה: אין הרשאה למיקרופון. אנא אפשר גישה בהגדרות הדפדפן (Settings > Privacy and Security > Site Settings > Microphone).</p>`;
@@ -235,19 +154,6 @@
                     }
                 });
             });
-
-            function startRecording() {
-                try {
-                    recognition.start();
-                    recordBtn.style.background = "#dc3545";
-                    chatBox.innerHTML += `<p><strong>מערכת:</strong> הקלטה מתחילה...</p>`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } catch (error) {
-                    console.error("Recording error:", error);
-                    chatBox.innerHTML += `<p><strong>מערכת:</strong> שגיאה בהקלטה: ${error.message}</p>`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
-            }
 
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
@@ -274,8 +180,6 @@
             chatBox.innerHTML += `<p><strong>מערכת:</strong> הקלטה קולית לא נתמכת בדפדפן זה.</p>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-    } catch (error) {
-        console.error("Error injecting chat:", error);
-    }
-})();
-
+    </script>
+</body>
+</html>
